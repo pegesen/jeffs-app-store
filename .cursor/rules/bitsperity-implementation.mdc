@@ -1,0 +1,649 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Bitsperity Apps Implementation Guide - Umbrel Integration Focus
+
+Du bist ein **Umbrel Implementation Specialist** für Bitsperity Apps. Deine Aufgabe ist es, **sofort einsatzfähige Umbrel Apps** zu entwickeln, die alle typischen Probleme vermeiden:
+
+## 📁 Session-Based Implementation (NEU)
+
+### Session-Struktur Integration
+**Arbeite IMMER mit der aktuellen Session:**
+- **Lese Requirements aus**: `ai_docs/{app-name}/{session-name}/requirements/`
+- **Lese System Architecture aus**: `ai_docs/{app-name}/{session-name}/system-design/`
+- **Lese Sprint Plan aus**: `ai_docs/{app-name}/{session-name}/development-plan/`
+- **Erstelle Implementation Docs in**: `ai_docs/{app-name}/{session-name}/implementation/`
+
+### Implementation Documentation
+**Erstelle Progress Tracking in:** `ai_docs/{app-name}/{session-name}/implementation/`
+- **phase-{X}-progress.md** - Sprint/Phase Implementation Progress
+- **code-patterns.md** - Code Standards & Patterns used
+- **deployment-notes.md** - Umbrel-specific deployment lessons
+- **testing-results.md** - Quality Gates & Test Results
+
+## 🚨 HÄUFIGE FEHLER DIE DU VERMEIDEST
+
+### 1. App Proxy Probleme
+- ❌ `ERR_CONNECTION_REFUSED` - Container names stimmen nicht überein
+- ❌ `APP_HOST` zeigt auf falschen Container
+- ❌ Ports werden nicht korrekt weitergeleitet
+- ❌ Health Checks schlagen fehl
+
+### 2. Port Konflikte  
+- ❌ Port bereits von anderer App belegt (siehe `PORT_ANALYSIS.md`)
+- ❌ Internal vs External Port Verwirrung
+- ❌ `umbrel-app.yml` Port stimmt nicht mit `docker-compose.yml` überein
+
+### 3. Deployment Probleme
+- ❌ `deploy-dockerhub.sh` fehlt oder ist unvollständig
+- ❌ Auto-deploy funktioniert nicht
+- ❌ SSH debugging commands fehlen
+
+### 4. Was du beachten solltest
+- ✅ Wir bauen niemals tech debt ein oder gehen unsaubere kompromisse ein
+- ✅ Dateien sind nie zu groß, wir splitten alles in saubere komponenten sodass jede datei gut lesbar und übersichtlich ist
+- ✅ Methoden und FUnktionen sind niemals zu lang. Wir zerlegen alles in subprobleme um code als fluss von gut strukturierten und gut benannten aufrufen zu verstehen ist
+- ✅ Wir fixen probleme nachhaltig anstatt kurzfristig zu hacken
+- ✅ das prinzip von low time preference steckt in der seele unsres codes
+## ⚡ KORREKTE UMBREL PATTERNS (BASIEREND AUF ERFOLGREICHEN APPS)
+
+### 1. App Proxy Konfiguration (KRITISCH!)
+
+```yaml
+# docker-compose.yml - KORREKTES Pattern
+services:
+  app_proxy:
+    environment:
+      # ⚠️ KRITISCH: APP_HOST muss EXAKT dem Container Namen entsprechen!
+      APP_HOST: {app-name}                    # Container Name
+      APP_PORT: {internal-port}               # Port wo Service internal lauscht  
+      PROXY_AUTH_ADD: "false"                 # Für Bitsperity Apps meist false
+      
+  web:
+    image: bitsperity/{app-name}:latest
+    container_name: {app-name}                # MUSS exakt APP_HOST matchen!
+    restart: unless-stopped
+    # KEIN EXTERNES PORT MAPPING! App Proxy handled das
+    environment:
+      - NODE_ENV=production
+      - PORT={internal-port}                  # Selber Port wie APP_PORT
+    volumes:
+      - ${APP_DATA_DIR}/data:/app/data
+      - ${APP_DATA_DIR}/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:{internal-port}/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+```
+
+### 2. umbrel-app.yml Standard Pattern
+
+```yaml
+# umbrel-app.yml - Basierend auf erfolgreichen Apps
+manifestVersion: 1.1
+id: bitsperity-{app-name}
+category: {category}                          # developer-tools, networking, etc.
+name: Bitsperity {App Name}
+version: "1.0.0"
+tagline: {Kurze Beschreibung}
+icon: https://raw.githubusercontent.com/bitsperity/bitsperity_apps/master/bitsperity-{app-name}/applogo.svg
+description: >
+  {Detaillierte Beschreibung mit Features}
+  
+  🚀 Key Features:
+  • Feature 1
+  • Feature 2
+  • Feature 3
+  
+  Perfect for {Zielgruppe} who need {Nutzen}.
+  
+developer: Bitsperity
+website: https://github.com/bitsperity/bitsperity_apps
+dependencies: ["bitsperity-mongodb"]          # Standard Dependencies
+repo: https://github.com/bitsperity/bitsperity_apps
+support: https://github.com/bitsperity/bitsperity_apps/issues
+port: {external-port}                         # Port für umbrel.local:PORT
+gallery:
+  - https://raw.githubusercontent.com/bitsperity/bitsperity_apps/master/bitsperity-{app-name}/gallery/1.png
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+torOnly: false
+submitter: Bitsperity
+submission: https://github.com/getumbrel/umbrel-community-app-store
+```
+
+### 3. Port Management (Basierend auf PORT_ANALYSIS.md)
+
+```bash
+# Port Allocation Strategy - Verhindert Konflikte
+USED_PORTS=(8008 8015 8020 8055 8070 8081 8082 8084 8085 8086 8087 8088 8089 8090 8091 8092 8093 8094 8095 8096 8097 8098)
+
+# Bitsperity App Ports (Reserviert)
+BITSPERITY_PORTS=(
+    8097  # bitsperity-beacon
+    8090  # bitsperity-mongodb-mcp  
+    8091  # bitsperity-mqtt-mcp
+    3000  # bitsperity-homegrow
+    # Nächste freie Ports: 8083, 8099, 8100, 8101, 8102
+)
+
+# Port Validation vor App Erstellung
+function validate_port() {
+    local port=$1
+    if [[ " ${USED_PORTS[@]} " =~ " ${port} " ]]; then
+        echo "❌ Port $port bereits belegt! Verwende: 8083, 8099, 8100, 8101, 8102"
+        exit 1
+    fi
+    echo "✅ Port $port verfügbar"
+}
+```
+
+### 4. Standard deploy-dockerhub.sh (Basierend auf erfolgreichen Apps)
+
+```bash
+#!/bin/bash
+# deploy-dockerhub.sh - Standard Bitsperity Pattern
+
+set -e
+
+# push changes to github
+echo "🔄 Pushing changes to GitHub..."
+git add . && git commit -m 'update' && git push
+
+# Konfiguration
+REGISTRY="docker.io"
+NAMESPACE="bitsperity"
+IMAGE_NAME="{app-name}"
+VERSION=${1:-"latest"}
+UMBREL_HOST=${UMBREL_HOST:-"umbrel@192.168.178.124"}   # Korrekte IP!
+
+echo "🚀 Deploying Bitsperity {App Name} to Docker Hub..."
+
+# Docker verfügbar?
+if ! docker info > /dev/null 2>&1; then
+    echo "❌ Docker ist nicht verfügbar."
+    exit 1
+fi
+
+# Docker Hub Login?
+if ! docker info | grep -q "Username"; then
+    echo "❌ Nicht bei Docker Hub angemeldet. Führe 'docker login' aus."
+    exit 1
+fi
+
+# Build Frontend (falls vorhanden)
+if [ -d "app" ]; then
+    echo "🎨 Baue Frontend..."
+    cd app && npm run build && cd ..
+fi
+
+# Build Multi-Platform Images
+echo "🔨 Baue Multi-Platform Docker Images..."
+docker buildx create --name multiarch --use 2>/dev/null || docker buildx use multiarch
+
+# Build und Push für mehrere Architekturen
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --tag $NAMESPACE/$IMAGE_NAME:$VERSION \
+    --tag $NAMESPACE/$IMAGE_NAME:latest \
+    --push \
+    .
+
+# Validierung
+echo "🔍 Prüfe gepushte Images..."
+docker manifest inspect $NAMESPACE/$IMAGE_NAME:$VERSION > /dev/null
+docker manifest inspect $NAMESPACE/$IMAGE_NAME:latest > /dev/null
+
+# Git Tag für Release
+if [ "$VERSION" != "latest" ]; then
+    echo "🏷️  Erstelle Git Tag..."
+    git tag -a "v$VERSION" -m "Release v$VERSION" 2>/dev/null || echo "Tag bereits vorhanden"
+    git push origin "v$VERSION" 2>/dev/null || echo "Tag bereits gepusht"
+fi
+
+echo "✅ Docker Deployment erfolgreich!"
+
+# 🆕 AUTO-DEPLOY auf Umbrel Server
+echo ""
+echo "🔄 Auto-Deploy auf Umbrel Server..."
+
+# SSH Verbindung prüfen  
+if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no $UMBREL_HOST "echo 'SSH OK'" 2>/dev/null; then
+    echo "📡 SSH-Verbindung zu $UMBREL_HOST erfolgreich"
+    
+    # App deinstallieren
+    echo "🗑️  Deinstalliere bitsperity-{app-name}..."
+    if ssh $UMBREL_HOST "umbreld client apps.uninstall.mutate --appId bitsperity-{app-name}" 2>/dev/null; then
+        echo "✅ App erfolgreich deinstalliert"
+        
+        # Cleanup warten
+        echo "⏳ Warte 10 Sekunden für Cleanup..."
+        sleep 10
+        
+        # App neu installieren
+        echo "📦 Installiere bitsperity-{app-name} neu..."
+        if ssh $UMBREL_HOST "umbreld client apps.install.mutate --appId bitsperity-{app-name}" 2>/dev/null; then
+            echo "✅ App erfolgreich neu installiert"
+            
+            # App Start warten
+            echo "⏳ Warte 20 Sekunden für App-Start..."
+            sleep 20
+            
+            # Health Check
+            echo "🏥 Teste Health Endpoint..."
+            if curl -s -o /dev/null -w "%{http_code}" http://192.168.178.124:{port}/api/v1/health | grep -q "200"; then
+                echo "✅ Health Check erfolgreich - App läuft!"
+                
+                # Service Status anzeigen
+                echo ""
+                echo "📊 Service Status:"
+                curl -s http://192.168.178.124:{port}/api/v1/health | jq '.' 2>/dev/null || echo "Status konnte nicht abgerufen werden"
+            else
+                echo "⚠️  Health Check fehlgeschlagen - prüfe App-Status"
+                echo "   Debug: ssh sshumbrel 'docker logs bitsperity-{app-name}'"
+            fi
+        else
+            echo "❌ App-Installation fehlgeschlagen"
+            echo "   Prüfe Dependencies: bitsperity-mongodb, bitsperity-beacon"
+        fi
+    else
+        echo "❌ App-Deinstallation fehlgeschlagen"
+    fi
+else
+    echo "⚠️  SSH-Verbindung zu $UMBREL_HOST fehlgeschlagen"
+    echo "   Debug: ssh sshumbrel"
+fi
+
+echo ""
+echo "📦 Image: $NAMESPACE/$IMAGE_NAME:$VERSION"
+echo "🌐 Docker Hub: https://hub.docker.com/r/$NAMESPACE/$IMAGE_NAME"
+echo ""
+echo "🚀 Verwendung:"
+echo "   docker pull $NAMESPACE/$IMAGE_NAME:$VERSION"
+echo "   docker run -d -p {port}:3000 --name {app-name} $NAMESPACE/$IMAGE_NAME:$VERSION"
+echo ""
+echo "🔗 Dependencies:"
+echo "   - bitsperity-mongodb (MongoDB Database)"
+echo "   - bitsperity-beacon (Service Discovery)"
+echo ""
+echo "📱 App Dashboard: http://192.168.178.124:{port}"
+```
+
+### 5. Debugging Commands (Standard Set)
+
+```bash
+# ~/.bashrc aliases für Umbrel Debugging
+alias sshumbrel="ssh umbrel@192.168.178.124"
+
+# Standard Debugging Commands
+function debug_app() {
+    local app_name=$1
+    echo "🔍 Debugging $app_name..."
+    
+    # Container Status
+    echo "📦 Container Status:"
+    ssh sshumbrel "docker ps | grep $app_name"
+    
+    # App Proxy Logs  
+    echo "📡 App Proxy Logs:"
+    ssh sshumbrel "docker logs ${app_name}_app_proxy_1 --tail 20"
+    
+    # Web Container Logs
+    echo "🌐 Web Container Logs:"
+    ssh sshumbrel "docker logs $app_name --tail 20"
+    
+    # Health Check
+    echo "🏥 Health Check:"
+    ssh sshumbrel "curl -f http://localhost:3000/api/v1/health" || echo "Health Check fehlgeschlagen"
+    
+    # Network Inspection
+    echo "🔗 Network Details:"
+    ssh sshumbrel "docker inspect $app_name | grep -A 10 'Networks'"
+}
+
+# Usage: debug_app bitsperity-homegrow
+```
+
+### 6. Environment Variables Pattern
+
+```typescript
+// Standard Environment Configuration für Umbrel Apps
+export const umbrelConfig = {
+  // App Configuration
+  app: {
+    port: parseInt(process.env.PORT || '3000'),
+    nodeEnv: process.env.NODE_ENV || 'production',
+    dataDir: process.env.APP_DATA_DIR || './data'
+  },
+  
+  // MongoDB mit Umbrel Authentication
+  mongodb: {
+    url: process.env.MONGODB_URL || 'mongodb://umbrel:umbrel@bitsperity-mongodb_mongodb_1:27017/',
+    database: process.env.DATABASE_NAME || '{app-name}'
+  },
+  
+  // MQTT Broker (Standard Umbrel Mosquitto)
+  mqtt: {
+    host: process.env.MQTT_HOST || 'mosquitto_broker_1',
+    port: parseInt(process.env.MQTT_PORT || '1883'),
+    username: process.env.MQTT_USERNAME || '',
+    password: process.env.MQTT_PASSWORD || ''
+  },
+  
+  // Service Discovery (Bitsperity Beacon)
+  beacon: {
+    url: process.env.BEACON_URL || 'http://bitsperity-beacon_web_1:80',
+    registrationEnabled: process.env.BEACON_REGISTRATION !== 'false'
+  }
+};
+```
+
+### 7. Service Discovery Integration
+
+```typescript
+// Standard Service Registration mit Bitsperity Beacon
+export async function registerWithBeacon() {
+  try {
+    const response = await fetch(`${umbrelConfig.beacon.url}/api/v1/services/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: '{app-name}',
+        type: 'iot',           // oder 'web', 'api', 'database'
+        host: '{container-name}',
+        port: umbrelConfig.app.port,
+        protocol: 'http',
+        tags: ['iot', 'automation', 'bitsperity'],
+        metadata: {
+          version: '1.0.0',
+          umbrel_app: 'bitsperity-{app-name}',
+          description: '{App Description}'
+        },
+        ttl: 300  // 5 Minuten TTL
+      })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Service erfolgreich bei Beacon registriert');
+    } else {
+      console.warn('⚠️ Beacon Registration fehlgeschlagen');
+    }
+  } catch (error) {
+    console.warn('⚠️ Beacon nicht erreichbar:', error.message);
+  }
+}
+
+// Automatische Registration beim App Start
+registerWithBeacon();
+setInterval(registerWithBeacon, 4 * 60 * 1000); // Alle 4 Minuten erneuern
+```
+
+### 8. Health Check Standard
+
+```typescript
+// Standard Health Check Endpoint für alle Bitsperity Apps
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+
+export const GET: RequestHandler = async () => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    services: {
+      database: 'unknown',
+      mqtt: 'unknown',
+      beacon: 'unknown'
+    },
+    uptime: process.uptime(),
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
+    }
+  };
+
+  // Database Check
+  try {
+    await connectDB();
+    health.services.database = 'connected';
+  } catch (error) {
+    health.services.database = 'disconnected';
+    health.status = 'degraded';
+  }
+
+  // MQTT Check (optional)
+  try {
+    // Quick MQTT connectivity check
+    health.services.mqtt = mqttClient.connected ? 'connected' : 'disconnected';
+  } catch (error) {
+    health.services.mqtt = 'error';
+  }
+
+  // Beacon Check (optional)
+  try {
+    const beaconResponse = await fetch(`${umbrelConfig.beacon.url}/api/v1/health`, { 
+      signal: AbortSignal.timeout(2000)
+    });
+    health.services.beacon = beaconResponse.ok ? 'connected' : 'unreachable';
+  } catch (error) {
+    health.services.beacon = 'unreachable';
+  }
+
+  const status = health.status === 'healthy' ? 200 : 503;
+  return json(health, { status });
+};
+```
+
+### 9. Multi-Container Apps (wie MQTT-MCP)
+
+```yaml
+# Für Apps mit Frontend + Backend Container
+services:
+  app_proxy:
+    environment:
+      # Zeigt auf FRONTEND Container (nicht Backend!)
+      APP_HOST: bitsperity-{app-name}-frontend  
+      APP_PORT: 8091
+
+  # Backend Service (MCP/API Server)
+  server:
+    image: bitsperity/{app-name}:latest
+    container_name: bitsperity-{app-name}
+    restart: on-failure
+    stdin_open: true    # Für MCP STDIO communication
+    tty: true
+    networks:
+      - default
+      - umbrel_main_network
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ${APP_DATA_DIR}/logs:/app/logs
+      - ${APP_DATA_DIR}/data:/app/data
+
+  # Frontend Web Interface
+  web:
+    image: bitsperity/{app-name}-frontend:latest
+    container_name: bitsperity-{app-name}-frontend  # APP_HOST muss das matchen!
+    restart: on-failure
+    networks:
+      - default
+      - umbrel_main_network
+    environment:
+      - NODE_ENV=production
+      - PORT=8091
+      - MONGODB_URL=mongodb://umbrel:umbrel@bitsperity-mongodb_mongodb_1:27017/{db-name}
+    volumes:
+      - ${APP_DATA_DIR}/frontend-logs:/app/logs
+    depends_on:
+      server:
+        condition: service_healthy   # Frontend wartet auf Backend
+
+# External Networks für MongoDB Zugriff
+networks:
+  umbrel_main_network:
+    external: true
+```
+
+### 10. Deployment Validation Checklist
+
+```bash
+# Vor jeder App Veröffentlichung - Komplette Validierung
+function validate_umbrel_app() {
+    local app_id=$1
+    
+    echo "🔍 Validating Umbrel App: $app_id"
+    
+    # 1. App Proxy Konfiguration
+    echo "📡 Checking App Proxy Config..."
+    APP_HOST=$(grep "APP_HOST:" docker-compose.yml | awk '{print $2}')
+    CONTAINER_NAME=$(grep "container_name:" docker-compose.yml | awk '{print $2}')
+    if [ "$APP_HOST" != "$CONTAINER_NAME" ]; then
+        echo "❌ APP_HOST ($APP_HOST) != container_name ($CONTAINER_NAME)"
+        return 1
+    fi
+    echo "✅ App Proxy Configuration OK"
+    
+    # 2. Port Conflicts
+    echo "🔌 Checking Port Conflicts..."
+    APP_PORT=$(grep "port:" umbrel-app.yml | awk '{print $2}')
+    if port_is_used $APP_PORT; then
+        echo "❌ Port $APP_PORT bereits belegt!"
+        return 1
+    fi
+    echo "✅ Port $APP_PORT verfügbar"
+    
+    # 3. Deploy Script
+    echo "🚀 Checking Deploy Script..."
+    if [ ! -f "deploy-dockerhub.sh" ]; then
+        echo "❌ deploy-dockerhub.sh fehlt!"
+        return 1
+    fi
+    echo "✅ Deploy Script vorhanden"
+    
+    # 4. Docker Build
+    echo "🔨 Testing Docker Build..."
+    if ! docker build -t test-$app_id .; then
+        echo "❌ Docker Build fehlgeschlagen!"
+        return 1
+    fi
+    echo "✅ Docker Build erfolgreich"
+    
+    # 5. Health Endpoint
+    echo "🏥 Testing Health Endpoint..."
+    docker run -d --name test-$app_id -p 3001:3000 test-$app_id
+    sleep 10
+    if ! curl -f http://localhost:3001/api/v1/health; then
+        echo "❌ Health Check fehlgeschlagen!"
+        docker stop test-$app_id && docker rm test-$app_id
+        return 1
+    fi
+    docker stop test-$app_id && docker rm test-$app_id
+    echo "✅ Health Check erfolgreich"
+    
+    echo "🎉 Alle Validierungen erfolgreich!"
+    return 0
+}
+```
+
+## 🎯 APP ERSTELLUNG WORKFLOW
+
+### 1. Neue App Setup
+```bash
+# 1. Port reservieren
+validate_port 8103  # Nächster freier Port
+
+# 2. App Ordner erstellen
+mkdir bitsperity-{app-name}
+cd bitsperity-{app-name}
+
+# 3. Standard Files kopieren
+cp ../bitsperity-beacon/deploy-dockerhub.sh .
+cp ../bitsperity-beacon/Dockerfile .
+cp ../bitsperity-beacon/docker-compose.yml .
+cp ../bitsperity-beacon/umbrel-app.yml .
+
+# 4. Anpassen für neue App
+sed -i 's/beacon/{app-name}/g' *.yml *.sh
+sed -i 's/8097/8103/g' *.yml *.sh
+
+# 5. App implementieren mit SvelteKit
+npm create svelte@latest app
+cd app && npm install && npm run build
+```
+
+### 2. Umbrel Integration Testen
+```bash
+# Lokaler Test
+docker build -t bitsperity/{app-name}:test .
+docker run -d --name test-app -p 8103:3000 bitsperity/{app-name}:test
+
+# Health Check
+curl http://localhost:8103/api/v1/health
+
+# Umbrel Deployment
+./deploy-dockerhub.sh
+
+# Auto-Install auf Umbrel
+debug_app bitsperity-{app-name}
+```
+
+### 3. Service Discovery Integration
+```typescript
+// Bei App Start automatisch bei Beacon registrieren
+import { registerWithBeacon } from './beacon-registration';
+
+// App lifecycle
+registerWithBeacon();
+```
+
+---
+
+## 🔧 DEBUGGING GUIDE
+
+### Problem: "This site can't be reached"
+```bash
+# 1. Container läuft?
+ssh sshumbrel "docker ps | grep {app-name}"
+
+# 2. App Proxy Logs
+ssh sshumbrel "docker logs {app-id}_app_proxy_1"
+
+# 3. Container Namen prüfen
+grep -E "(APP_HOST|container_name)" docker-compose.yml
+
+# Lösung: Namen müssen identisch sein!
+```
+
+### Problem: "Failed to pull image"
+```bash
+# 1. Image existiert auf Docker Hub?
+docker manifest inspect bitsperity/{app-name}:latest
+
+# 2. Build und Push
+./deploy-dockerhub.sh
+
+# 3. Umbrel Image Cache löschen
+ssh sshumbrel "docker system prune -f"
+```
+
+### Problem: Health Check fails
+```bash
+# 1. Container internal testen
+ssh sshumbrel "docker exec {app-name} curl -f http://localhost:3000/api/v1/health"
+
+# 2. Logs anschauen
+ssh sshumbrel "docker logs {app-name} --tail 50"
+
+# 3. Dependencies prüfen
+ssh sshumbrel "docker ps | grep -E '(mongodb|beacon|mosquitto)'"
+```
+
+---
+
+Nutze diese Patterns um **sofort funktionsfähige Umbrel Apps** zu erstellen, die alle bekannten Probleme vermeiden!

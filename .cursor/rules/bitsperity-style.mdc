@@ -1,0 +1,809 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Bitsperity Design Style Guide - Liquid Glass 2025 Edition
+
+## 🌿 Design-Philosophie
+Bitsperity ist **naturverbunden, verspielt und edel**. Das Design ist **ultra-lightweight** und basiert auf dem **revolutionären Liquid Glass 2025 System** - einer Weiterentwicklung des Glass-Morphismus mit **diagonalen Gradienten**, **Multi-Layer-Blur-Effekten** und **Performance-GPU-Optimierung**.
+
+## 🪟 Liquid Glass 2025 System - Hierarchie
+
+### Premium Glass Classes - GPU-Optimiert
+```css
+.liquid-glass-card     // Premium cards (diagonal gradients + 20px blur + shadows)
+.glass-container       // Legacy containers (auto-upgrade to liquid with overflow-hidden)
+.glass                 // Base effect (auto-upgraded inputs/selects)
+.glass-btn             // Interactive buttons (avoid - use transparent hover instead)
+.glass-nav-item        // Navigation elements (subtle hover: scale(1.02))
+.glass-badge           // Status indicators (reduced blur: blur(8px))
+```
+
+### 🚨 **Liquid Glass 2025 Revolution**
+**Cutting-Edge Features:**
+- **Diagonal Gradients (135°)** für räumliche Tiefe
+- **Multi-Layer Backdrop Blur** (20px + saturation boost)
+- **Premium Border System** ohne border-image Artefakte
+- **GPU-Beschleunigung** mit `will-change` und `translateZ(0)`
+- **Floating Shadows** für echte räumliche Trennung
+
+### 🔬 Glass Physics - Realistische Tiefe
+```css
+/* Spatial Depth Levels */
+Level 1: blur(8px)  - Badges, subtle elements
+Level 2: blur(12px) - Standard glass components
+Level 3: blur(16px) - Hover states, focus emphasis
+Level 4: blur(20px) - Deep hover, modal states
+
+/* Transform Physics */
+Subtle:    translateY(-2px) scale(1.01)  // Nav items
+Standard:  translateY(-4px) scale(1.02)  // Buttons  
+Enhanced:  translateY(-8px) scale(1.02)  // Cards
+```
+
+### ❌ Liquid Glass 2025 Regeln (Absolut)
+
+#### 🚨 **KRITISCHE VERSCHACHTELUNGS-REGELN**
+**NIEMALS** Glass-Komponenten verschachteln:
+```html
+<!-- ❌ FATAL ERROR - Verschachtelte Glass Components -->
+<div class="glass-container">
+  <div class="liquid-glass-card">Content</div>  <!-- FATAL! -->
+</div>
+
+<div class="liquid-glass-card">
+  <div class="liquid-glass-card">Content</div>  <!-- FATAL! -->
+</div>
+
+<div class="glass-card">
+  <div class="glass-card">Content</div>         <!-- FATAL! -->
+</div>
+
+<!-- ❌ WEITERE ANTI-PATTERNS -->
+<div class="liquid-glass-card p-4">           <!-- FALSCH: p-4 auf liquid-glass -->
+<div class="glass-container p-6">             <!-- FALSCH: Doppel-Padding -->
+<div class="liquid-glass-card hover:scale-105"> <!-- FALSCH: Hover auf Container -->
+```
+
+#### ✅ **KORREKTE STRUKTUREN**
+```html
+<!-- ✅ PERFEKT - Liquid Glass 2025 Accordion Pattern -->
+<div class="liquid-glass-card overflow-hidden transition-all duration-400 ease-out">
+  <button class="w-full p-4 sm:p-6 bg-transparent hover:bg-gradient-to-r hover:from-white/3">
+    Section Header
+  </button>
+  {#if expanded}
+    <div class="liquid-glass-divider p-4 sm:p-6">
+      <div class="space-y-6">                 <!-- Spacing Container -->
+        <div class="liquid-glass-card p-4 sm:p-6 border border-white/10">
+          Content Card                         <!-- EINZELNE Cards in space-y Container -->
+        </div>
+      </div>
+    </div>
+  {/if}
+</div>
+
+<!-- ✅ FUNKTIONALE CONTAINER (unsichtbar) -->
+<div class="space-y-6">                      <!-- Spacing-Container -->
+  <div class="liquid-glass-card">Card 1</div> <!-- Glass-Component -->
+  <div class="liquid-glass-card">Card 2</div> <!-- Glass-Component -->
+</div>
+
+<!-- ✅ LEGACY AUTO-UPGRADE -->
+<div class="glass-container overflow-hidden">  <!-- Auto-upgrades to Liquid Glass -->
+  <button class="w-full p-6 bg-transparent hover:bg-gradient-to-r hover:from-white/3">
+    <!-- NO glass-btn - use transparent hover -->
+  </button>
+</div>
+```
+
+#### 🔍 **ANTI-PATTERN DETECTION CHECKLIST**
+Vor jedem Glass-Component fragen:
+- [ ] **Verschachtelung?** Ist ein Glass-Element in einem anderen Glass-Element?
+- [ ] **Doppel-Padding?** Hat sowohl Container als auch Content padding?
+- [ ] **Hover-Conflict?** Sind Hover-Effekte auf Container und Content?
+- [ ] **Border-Conflict?** Sind Borders auf verschachtelten Elementen?
+
+#### 🛠️ **SOFORTIGE REPARATUR-PATTERNS**
+```html
+<!-- ❌ ERKANNT: Verschachtelte Cards -->
+<div class="liquid-glass-card">
+  <div class="liquid-glass-card">Content</div>
+</div>
+
+<!-- ✅ REPARIERT: Space-Container -->
+<div class="space-y-6">
+  <div class="liquid-glass-card">Content</div>
+</div>
+
+<!-- ❌ ERKANNT: Doppel-Padding -->
+<div class="liquid-glass-card p-6">
+  <div class="p-4">Content</div>
+</div>
+
+<!-- ✅ REPARIERT: Single-Level Padding -->
+<div class="liquid-glass-card p-6">
+  <div>Content</div>
+</div>
+```
+
+### 🔄 **Backward Compatibility System**
+- **`glass-container overflow-hidden`** → Auto-upgrade zu Liquid Glass
+- **`input.glass`** → Auto-upgrade zu Premium Glass Inputs  
+- **`select.glass`** → Auto-upgrade zu Premium Glass Selects
+- **Alle Legacy-Komponenten** funktionieren weiter, sehen aber besser aus
+
+### 🧬 Funktionale Container-DNA
+Verschachtelung nur mit **unsichtbaren Containern**:
+```html
+<!-- ✅ Moderne Container-Architektur -->
+<div class="max-w-7xl mx-auto px-4 py-6">  <!-- Layout-Container -->
+  <div class="space-y-8">                  <!-- Spacing-Container -->
+    <div class="glass-card">Card 1</div>   <!-- Glass-Component -->
+    <div class="glass-card">Card 2</div>   <!-- Glass-Component -->
+  </div>
+</div>
+```
+
+## 🎭 Liquid Glass Accordion 2025 - Revolution
+Akkordeons sind **single-liquid-entities** mit **overflow-hidden** und **Premium Hover-Gradienten**:
+```html
+<!-- ✅ Liquid Glass 2025 Accordion -->
+<div class="liquid-glass-card overflow-hidden transition-all duration-400 ease-out">
+  <button class="w-full p-6 border-none bg-transparent flex items-center justify-between 
+                 transition-all duration-300 text-left 
+                 hover:bg-gradient-to-r hover:from-white/3 hover:to-transparent 
+                 focus:outline-none">
+    <div class="flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 
+                  flex items-center justify-center shadow-lg">
+        <span class="text-white text-xl">🎯</span>
+      </div>
+      <span class="font-semibold text-on-glass">Section Title</span>
+    </div>
+    <svg class="w-5 h-5 text-on-glass-secondary transform transition-transform duration-300 
+               {expanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+  {#if expanded}
+    <div class="liquid-glass-divider p-6">
+      <div class="space-y-6">Expanded Content</div>
+    </div>
+  {/if}
+</div>
+
+<!-- ✅ LEGACY AUTO-UPGRADE (funktioniert auch) -->
+<div class="glass-container overflow-hidden transition-all duration-300">
+  <button class="w-full p-6 bg-transparent hover:bg-gradient-to-r hover:from-white/3">
+    <!-- Wird automatisch zu Liquid Glass upgraded -->
+  </button>
+</div>
+```
+
+## 🎨 Advanced Text-System mit CSS Variables
+```css
+/* CSS Variables für Dynamic Text */
+--text-on-glass: rgba(0, 0, 0, 0.9)
+--text-on-glass-secondary: rgba(0, 0, 0, 0.7)
+
+/* Text Shadows für Glass-Optimierte Lesbarkeit */
+Light Mode: text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8)
+Dark Mode:  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8)
+```
+
+### Text-Hierarchie (Cutting Edge)
+- **Primary Actions** (CTAs, Titles): `text-on-glass` + `font-semibold`
+- **Secondary Content** (Labels, Meta): `text-on-glass-secondary` + `font-medium`
+- **Tertiary Info** (Timestamps, IDs): `text-on-glass-secondary` + `font-normal` + `text-sm`
+
+## 🌅 Advanced Nature-Background System
+```css
+/* CSS Custom Properties - Theme System */
+--bg-image-day: url('/images/nature/mountain-day.webp')
+--bg-image-night: url('/images/nature/mountain-night.webp')
+--bg-image-day-mobile: url('/images/nature/mountain-day-mobile.webp')
+--bg-image-night-mobile: url('/images/nature/mountain-night-mobile.webp')
+
+/* Performance Optimiert */
+background-attachment: fixed      // Desktop - Parallax Effect
+background-attachment: scroll     // Mobile - Performance
+```
+
+### Background-Breathing Spacing
+- **Section Gaps:** `min. 2rem` (Desktop) / `1.5rem` (Mobile)
+- **Card Gaps:** `1rem-2rem` für verspielte Ästhetik
+- **Content Padding:** Mehr Weißraum auf Desktop für edlen Charakter
+
+## 📱 Mobile-First Spacing System (Cutting Edge)
+```css
+/* Responsive Spacing Matrix */
+Mobile:  gap-4, space-y-4, p-4, mx-4
+Tablet:  gap-6, space-y-6, p-6, mx-6  
+Desktop: gap-8, space-y-8, p-8, mx-8
+
+/* Spezielle Mobile Classes */
+.mobile-stats-grid     { grid-template-columns: 1fr 1fr; gap: 1rem }
+.mobile-device-grid    { flex-direction: column; gap: 2rem }
+.mobile-content-spacing { padding: 0 1rem; margin-bottom: 2rem }
+```
+
+## ⚡ Advanced Animation System
+
+### Transition-Performance-Matrix
+```css
+/* Micro-Interactions (< 200ms) */
+transition: all 0.1s ease-out     // Click feedback, active states
+
+/* Standard Transitions (300ms) */  
+transition: all 0.3s ease         // Hover, focus, standard UI
+
+/* Enhanced Experiences (400ms) */
+transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1)  // Card hovers, modals
+```
+
+### Physics-Based Hover Effects
+```css
+/* Button Physics */
+.glass-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  backdrop-filter: blur(16px);
+}
+
+/* Card Physics - Spatial Depth */
+.glass-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px var(--glass-shadow-hover);
+}
+```
+
+## 🎯 Advanced Layout-Patterns
+
+### Content-Wrapper Evolution
+```html
+<!-- Neue Standard Content Architecture -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <!-- Direct Glass Components - Keine Container-Verschachtelung -->
+  <div class="glass-card mb-8">Primary Content</div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="glass-card">Card 1</div>
+    <div class="glass-card">Card 2</div>
+    <div class="glass-card">Card 3</div>
+  </div>
+</div>
+```
+
+### Advanced Grid-Systems
+```html
+<!-- Stats Grid (Mobile-First) -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+  <div class="glass-card">Stat</div>
+</div>
+
+<!-- Device Grid (Responsive Masonry) -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+  <div class="glass-card">Device</div>
+</div>
+```
+
+## 🌈 Advanced Color-Accent System
+
+### Gradient-Icon Philosophy
+```html
+<!-- Status-Gradient Matrix -->
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600">  <!-- Success/Growth -->
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600">    <!-- Tech/Config -->
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600"> <!-- Energy/Warning -->
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-600">      <!-- Error/Critical -->
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600"> <!-- Automation -->
+```
+
+### Advanced Homegrow Color-Psychology
+- **Grün (Growth):** Online, Wachstum, Erfolg, Nachhaltigkeit
+- **Blau (Tech):** Konfiguration, Daten, Vernetzung, Stabilität  
+- **Orange (Energy):** Sensoren, Kalibrierung, Aktivität, Wärme
+- **Rot (Alert):** Fehler, Notfälle, Offline, Kritisch
+- **Lila (AI):** Automation, Intelligenz, Programme, Zukunft
+
+## 🔘 **Liquid Glass 2025 Button System**
+
+### **Minimales Button-Hierarchie**
+```html
+<!-- Success Actions (Program Start, Confirm) -->
+<button class="liquid-glass-btn-success">🚀 Programm starten</button>
+
+<!-- Neutral Actions (Cancel, Secondary) -->
+<button class="liquid-glass-btn-secondary">Abbrechen</button>
+
+<!-- Disabled State (automatic) -->
+<button class="liquid-glass-btn-success" disabled>Startet...</button>
+```
+
+### **Button-Usage Rules**
+- **liquid-glass-btn-success**: Positive/Confirm Actions nur
+- **liquid-glass-btn-secondary**: Neutral/Cancel Actions nur  
+- **Disabled-State**: Automatisch bei `:disabled` - kein manuelles Styling
+- **Focus-States**: Automatisch integriert - keine Custom-Classes nötig
+
+## 📐 Advanced Spacing-Standards
+
+### Component-Spacing Matrix
+```css
+/* Micro-Spacing (Intra-Component) */
+space-x-2, space-y-2    // Icon + Text, kleine Elemente
+space-x-3, space-y-3    // Button-Gruppen, Form-Elements
+
+/* Standard-Spacing (Inter-Component) */  
+space-x-4, space-y-4    // Card-Inhalte, Listen-Items
+space-x-6, space-y-6    // Section-Abstände, Card-Groups
+
+/* Macro-Spacing (Layout-Level) */
+space-x-8, space-y-8    // Page-Sections, Major-Blocks
+```
+
+### Padding-Hierarchy
+```css
+p-2, px-2 py-1    // Badges, kleine UI-Elements
+p-4              // glass-container (Layout-Level)
+p-6              // glass-card (Content-Level)  
+px-4 py-2        // glass-btn (Interactive-Level)
+```
+
+## 🔧 Advanced Performance Features
+
+### CSS Loading Optimizations
+```css
+/* Advanced Loading States */
+.glass-loading {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: glass-shimmer 2s infinite;
+}
+
+.glass-pulse {
+  animation: glass-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+```
+
+### 🎛️ Advanced Range-Slider System (Liquid Glass 2025)
+```css
+/* Liquid Glass Range-Slider - Premium UX */
+.liquid-glass-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.15);
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-glass-range:hover {
+  backdrop-filter: blur(16px) saturate(200%);
+  border-color: rgba(255,255,255,0.25);
+  transform: translateY(-1px);
+}
+
+.liquid-glass-range:focus {
+  backdrop-filter: blur(20px) saturate(220%);
+  border-color: rgba(255,255,255,0.35);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+}
+
+/* Webkit Thumb (Chrome/Safari) */
+.liquid-glass-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+  border: 2px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-glass-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, rgba(255,255,255,1), rgba(255,255,255,0.8));
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2), 0 0 0 2px rgba(255,255,255,0.15);
+}
+
+/* Firefox Thumb */
+.liquid-glass-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+  border: 2px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-glass-range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, rgba(255,255,255,1), rgba(255,255,255,0.8));
+}
+
+/* Range Track Styling */
+.liquid-glass-range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.liquid-glass-range::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+}
+```
+
+### 🎨 Range-Slider Semantic Theming
+```css
+/* Semantic Theme System - Domain Agnostic */
+.liquid-glass-range.theme-success::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.liquid-glass-range.theme-success::-moz-range-thumb {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Primary Theme (Blue) */
+.liquid-glass-range.theme-primary::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.liquid-glass-range.theme-primary::-moz-range-thumb {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Accent Theme (Purple) */
+.liquid-glass-range.theme-accent::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.liquid-glass-range.theme-accent::-moz-range-thumb {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+```
+
+### Accessibility Excellence
+```css
+/* Reduced Motion Respect */
+@media (prefers-reduced-motion: reduce) {
+  .glass, .glass-card, .glass-btn { transition: none; }
+}
+
+/* High Contrast Support */
+@media (prefers-contrast: high) {
+  .glass { border-width: 2px; backdrop-filter: blur(8px); }
+}
+```
+
+## ✨ Liquid Glass 2025 Example: Perfect Bitsperity Component
+```html
+<div class="liquid-glass-card group hover:scale-105 transition-all duration-400 cursor-pointer">
+  <!-- Header mit Advanced Gradient-Icon -->
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center space-x-4">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 
+                  flex items-center justify-center shadow-lg
+                  group-hover:scale-110 transition-transform duration-300">
+        <svg class="w-6 h-6 text-white" fill="currentColor">...</svg>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold text-on-glass">Device Name</h3>
+        <p class="text-sm text-on-glass-secondary">ESP32-Smart-01</p>
+      </div>
+    </div>
+    <div class="glass-badge">
+      <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+      <span class="text-on-glass-secondary">Online</span>
+    </div>
+  </div>
+  
+  <!-- Content mit Premium Spacing -->
+  <div class="space-y-4 text-on-glass-secondary mb-6">
+    <div class="flex justify-between">
+      <span class="font-semibold text-on-glass">Temperature:</span>
+      <span class="font-medium">24.5°C</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="font-semibold text-on-glass">Humidity:</span>
+      <span class="font-medium">68%</span>
+    </div>
+    <div class="flex justify-between">
+      <span class="font-semibold text-on-glass">Location:</span>
+      <span class="font-medium">Greenhouse A</span>
+    </div>
+  </div>
+  
+  <!-- Actions mit Liquid Glass Buttons -->
+  <div class="flex space-x-3">
+    <button class="flex-1 px-4 py-3 bg-gradient-to-r from-white/8 to-white/4 
+                   border border-white/15 rounded-xl text-on-glass font-medium
+                   hover:from-white/12 hover:to-white/6 hover:scale-105
+                   transition-all duration-300 backdrop-blur-sm">
+      Configure
+    </button>
+    <button class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500/20 to-blue-600/10 
+                   border border-blue-400/30 rounded-xl text-on-glass font-medium
+                   hover:from-blue-500/30 hover:to-blue-600/15 hover:scale-105
+                   transition-all duration-300 backdrop-blur-sm">
+      Details
+    </button>
+  </div>
+</div>
+
+<!-- ✅ LEGACY VERSION (Auto-Upgraded) -->
+<div class="glass-container overflow-hidden group hover:scale-105 transition-all duration-300 cursor-pointer p-6">
+  <!-- Wird automatisch zu Liquid Glass mit Premium-Effekten -->
+  <div class="flex space-x-3">
+    <input type="text" class="glass flex-1" placeholder="Auto-upgraded input" />
+    <select class="glass">
+      <option>Auto-upgraded select</option>
+    </select>
+  </div>
+</div>
+```
+
+## 🚀 Modern CSS Features Integration
+
+### CSS Custom Properties (Advanced)
+```css
+/* Dynamic Theme Variables */
+:root {
+  --glass-blur: 12px;
+  --glass-opacity: 0.35;
+  --animation-speed: 0.3s;
+  --spacing-unit: 1rem;
+}
+
+/* Runtime Theme Switching */
+[data-theme="performance"] {
+  --glass-blur: 8px;        // Weniger blur für bessere Performance
+  --animation-speed: 0.2s;   // Schnellere Animationen
+}
+```
+
+### Container Queries (Future-Ready)
+```css
+/* Responsive Components basierend auf Container-Größe */
+@container (min-width: 400px) {
+  .glass-card { 
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+  }
+}
+```
+
+## ✅ Liquid Glass 2025 Design-Checkliste
+
+### 🚨 **KRITISCHE ANTI-PATTERN CHECKS (Zuerst!)**
+- [ ] **❌ KEINE Verschachtelung** - Glass-Component in Glass-Component?
+- [ ] **❌ KEIN Doppel-Padding** - p-4 auf liquid-glass UND auf Child?
+- [ ] **❌ KEINE Hover-Konflikte** - Hover sowohl auf Container als auch Content?
+- [ ] **❌ KEINE Border-Konflikte** - Border auf verschachtelten Glass-Elementen?
+
+### ✅ **STRUKTURELLE KORREKTHEIT**
+- [ ] **Liquid Glass Components** stehen eigenständig (keine Verschachtelung)
+- [ ] **Space-Container** für Multiple Cards (`<div class="space-y-6">`)
+- [ ] **Accordion-Pattern** korrekt: liquid-glass-card > button + liquid-glass-divider
+- [ ] **Legacy Auto-Upgrade** für `glass-container overflow-hidden` 
+
+### ✅ **DESIGN EXCELLENCE**
+- [ ] **Premium Spacing** - `space-y-6` für Sections, `space-y-4` für Content
+- [ ] **Enhanced Transitions** - 0.4s für Liquid Glass, 0.3s für Standard
+- [ ] **Text-Hierarchie** - `font-semibold text-on-glass` für Labels, `font-medium` für Values
+- [ ] **Mobile-First** mit Enhanced Desktop-Spacing (`p-4 sm:p-6`)
+- [ ] **Multi-Layer Blur** - 20px + saturation(180%) für Cards, 10px für Inputs
+- [ ] **Diagonal Gradients** (135°) für räumliche Tiefe
+- [ ] **GPU-Optimierung** - `will-change` und `translateZ(0)`
+- [ ] **Premium Hover-Gradienten** statt weiße Boxen
+- [ ] **Floating Shadows** für echte räumliche Trennung
+- [ ] **Accessibility-compliant** focus states mit Gradient-Rings
+- [ ] **Performance-Benchmarks** - 60fps maintained, <16ms transitions
+
+### 🚀 **Liquid Glass 2025 Upgrade-Path**
+- **Neue Components**: Verwende `liquid-glass-card` direkt
+- **Legacy Components**: Füge `overflow-hidden` zu `glass-container` hinzu
+- **Form-Inputs**: Behalte `class="glass"` - wird automatisch upgraded
+- **Buttons**: Vermeide `glass-btn` - verwende `bg-transparent hover:bg-gradient-to-r`
+
+## 🎯 Performance-Benchmarks
+- **First Paint:** < 16ms (60fps ready)
+- **Transition Smoothness:** 60fps maintained
+- **Mobile Scroll:** Optimized with `scroll-behavior: smooth`
+- **Memory Usage:** Minimal durch backdrop-filter statt box-shadow overuse
+
+## 🏗️ **BITSPERITY DESIGN SYSTEM PRINCIPLES**
+
+### 📐 **Architectural Consistency**
+**Principle**: Maintain structural integrity across all Bitsperity applications
+```css
+/* ✅ UNIVERSAL STRUCTURAL PATTERNS */
+.system-container     // Application-level layout containers
+.content-section      // Major content organization blocks  
+.component-grid       // Responsive component arrangements
+.control-group        // Interactive element groupings
+.status-indicator     // State visualization elements
+```
+
+**Consistency Rule**: Identical UI patterns use identical class structures across all apps
+
+### 🎨 **Semantic Theming Architecture**
+**Principle**: Domain-agnostic theming system for scalable design
+```css
+/* ✅ SEMANTIC COLOR SYSTEM */
+.theme-success        // Green spectrum - positive states, growth, online
+.theme-primary        // Blue spectrum - primary actions, data, configuration
+.theme-accent         // Purple spectrum - secondary features, automation
+.theme-warning        // Orange spectrum - attention, energy, activity
+.theme-error          // Red spectrum - errors, alerts, critical states
+.theme-neutral        // Gray spectrum - disabled, inactive, secondary info
+```
+
+**Theming Rule**: Use semantic themes instead of domain-specific color naming
+
+### 🔄 **Component Data Patterns**
+**Principle**: Prevent code duplication through centralized data architecture
+```typescript
+// ✅ UNIVERSAL DATA STRUCTURE PATTERN
+// $lib/constants/[domain].ts
+export interface EntityDefinition {
+  id: string;
+  label: string;
+  icon: string;
+  category: string;
+  metadata: Record<string, unknown>;
+}
+
+export const DOMAIN_ENTITIES: EntityDefinition[] = [
+  // Centralized entity definitions
+];
+```
+
+**Data Rule**: Shared structures → Centralized constants with TypeScript interfaces
+
+### 📱 **Input Pattern Standards**
+**Principle**: Optimal input selection based on data characteristics
+```html
+<!-- ✅ INPUT SELECTION MATRIX -->
+
+<!-- Continuous Ranges: Slider + Visual Feedback -->
+<input type="range" class="liquid-glass-range theme-primary" />
+<div class="range-display">
+  <span class="range-min">Min</span>
+  <span class="range-current">{value}</span>
+  <span class="range-max">Max</span>
+</div>
+
+<!-- Discrete Values: Constrained Number Input -->
+<input type="number" class="liquid-glass-input" min="1" max="999" />
+
+<!-- Selections: Enhanced Dropdown -->
+<select class="liquid-glass-select">
+  <option>Available Options</option>
+</select>
+
+<!-- Boolean States: Toggle Switch -->
+<input type="checkbox" class="liquid-glass-toggle" />
+```
+
+**Input Rule**: Data type and range determine optimal input pattern across applications
+
+### 🎯 **Global CSS Architecture**
+**Principle**: Consistent styling through systematic CSS organization
+```css
+/* ✅ CSS ARCHITECTURE HIERARCHY */
+
+/* Level 1: System Foundation */
+.liquid-glass-*       // Core visual system classes
+.layout-*            // Structural layout classes
+.spacing-*           // Consistent spacing utilities
+
+/* Level 2: Component Library */
+.component-*         // Reusable component styles
+.pattern-*          // Common interaction patterns
+.widget-*           // Composite UI widgets
+
+/* Level 3: State & Modifiers */
+.state-*            // Application state styling
+.modifier-*         // Behavioral modifications
+.theme-*            // Semantic theming classes
+```
+
+**Architecture Rule**: Global styles for reusability, component-scoped only for unique layouts
+
+### 🔗 **State Isolation Patterns**
+**Principle**: Functional domain separation prevents cross-feature coupling
+```typescript
+// ✅ DOMAIN-ISOLATED STATE ARCHITECTURE
+interface FeatureDomainState {
+  configuration: DomainConfig;
+  status: DomainStatus;
+  userPreferences: DomainPreferences;
+  temporaryState: DomainTemp;
+}
+
+// ✅ PROPER STATE SEPARATION
+const domainA = { maxValue: 100 };  // Feature A specific
+const domainB = { maxValue: 100 };  // Feature B specific (isolated)
+
+// ❌ ANTI-PATTERN: Cross-domain shared state
+// const sharedMaxValue = 100;  // Creates dangerous coupling
+```
+
+**State Rule**: Each functional domain maintains isolated state management
+
+### 📐 **Universal Background System**
+**Principle**: Consistent viewport coverage across all device types
+```css
+/* ✅ BULLETPROOF BACKGROUND PATTERN */
+.app-background {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .app-background {
+    background-attachment: scroll; /* Mobile performance */
+    min-height: 100dvh; /* Dynamic viewport height */
+  }
+  
+  /* Overscroll Protection */
+  .app-background::after {
+    content: '';
+    position: absolute;
+    top: 100vh;
+    width: 100%;
+    height: 50vh;
+    background: linear-gradient(to bottom, transparent, var(--background-fallback));
+    z-index: -1;
+  }
+}
+```
+
+**Background Rule**: All Bitsperity apps implement consistent background coverage
+
+## 🚀 **DESIGN SYSTEM QUALITY STANDARDS**
+
+### 🔍 **Development Standards Checklist**
+- [ ] **Pattern Consistency** - UI follows established Bitsperity design patterns
+- [ ] **Component Reusability** - Components designed for cross-application usage
+- [ ] **State Architecture** - Functional domains maintain proper isolation
+- [ ] **Semantic Theming** - Domain-agnostic color and style application
+- [ ] **Input Optimization** - Appropriate input patterns for data types
+- [ ] **Mobile Excellence** - Equivalent experience across all device types
+
+### ⚡ **Implementation Guidelines**
+- **Centralization**: Shared patterns → Global CSS or centralized constants
+- **Isolation**: Functional domains use separate state management
+- **Performance**: Maintain 60fps across all user interactions
+- **Accessibility**: Full keyboard navigation and assistive technology support
+- **Scalability**: Design system supports rapid cross-application development
+
+### 🎯 **Quality Benchmarks**
+- **Performance**: <16ms transition times, 60fps animation consistency
+- **Consistency**: Identical design patterns across all Bitsperity applications
+- **Maintainability**: Single source of truth for shared design elements
+- **Scalability**: Efficient development of new features across application suite
